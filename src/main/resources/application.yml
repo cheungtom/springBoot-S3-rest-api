@@ -1,0 +1,37 @@
+#aws:
+#  aws_access_key_id: ${AWS_ACCESS_KEY_ID}
+#  aws_secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+#  region: ${AWS_DEFAULT_REGION}
+
+spring:
+  profiles:
+    active:
+    - peer1
+ 
+---
+spring:
+  profiles: peer1
+  application:
+    name: service1
+
+server:
+  port: 8080
+
+management:
+  endpoint:
+    health:
+      enabled: true
+
+---
+spring:
+  profiles: peer2
+  application:
+    name: service1
+
+server:
+  port: 8081
+
+management:
+  endpoint:
+    health:
+      enabled: true

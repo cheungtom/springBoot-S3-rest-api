@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: s3-svc
+  # labels so that we can bind a Service to this Pod
+  labels:
+    app: s3-svc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: s3-svc
+  template:
+    metadata:
+      labels:
+        app: s3-svc
+    spec:
+      containers:
+      - name: s3-svc
+        image: cheungtom/s3-svc:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "500m" #half the CPU free: 0.5 Core
+            memory: "256Mi"
+          limits:
+            cpu: "1000m" #max 1.0 Core
+            memory: "512Mi"
+        env:
+        # Environment variables are not a best practice for security,
+        # but we're using them here for brevity in the example.
+        # See Chapter 11 for better options.
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: aws_access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: aws_secret_access_key
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: aws_region
+        livenessProbe: #Restart Pod when fail
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 5 #Will not call health check URL until 5 seconds after all containers in the Pod started
+          timeoutSeconds: 1 #Then msut be response within 1 seconds. HTTP code >=200 and <400 consider successful
+          periodSeconds: 10 #K8 will call liveness probe every 10 seconds
+          failureThreshold: 3  #If more than 3 probes fail, the container will restart
+        readinessProbe: #Remove Pod when fail
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+          periodSeconds: 10
+          failureThreshold: 3
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
