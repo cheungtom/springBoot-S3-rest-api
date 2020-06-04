@@ -55,6 +55,7 @@ kubectl get rs
 kubectl apply -f s3-svc-service.yaml
 kubectl get svc
 
+http://localhost:80/v1/s3?folderName=tom-s3-poc
 
 11.a) Install OpenShift on AWS by CloudFormtaion
 Follow this link:
