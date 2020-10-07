@@ -6,7 +6,7 @@ mvn clean install
 
 mvn eclipse:eclipse
 
-3. Local test:
+3.) Local test:
 
 MacOS or Linux
 
